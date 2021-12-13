@@ -1,9 +1,10 @@
 /*
  *******************************************************************************
  * File Name        :   my_timer.c
+ *
  * Description      :   Timer API implementation
  *
- * Authors          :   Himanshu Parihar,
+ * Author           :   Himanshu Parihar
  *
  * Date             :   October 02, 2021
  *******************************************************************************
@@ -24,6 +25,7 @@
 
 #define MICROSECONDS_IN_MILLISECONDS (1000)
 
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 
 /*
@@ -283,4 +285,45 @@ void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
+/*
+ * Function         :   changeTimer1CaptureCompare
+ *
+ * Description      :   Change value of CCR register for timer 1
+ *
+ * Parameters       :
+ *      htim        -   Handle to the timer for which the period must be changed
+ *      timChannnel -   Channel number
+ *      value       -   New compare value
+ *
+ * Returns          :   void
+ */
+void changeTimer1CaptureCompare(TIM_HandleTypeDef *htim, uint16_t timChannel, uint16_t value)
+{
+    if (htim->Instance != TIM1) {
+        return;
+    }
+
+    __HAL_TIM_SET_COMPARE(htim, timChannel, value);
+}
+
+/*
+ * Function         :   changeTimer1Period
+ *
+ * Description      :   Change the value till which a timer counts before
+ *                      resetting
+ *
+ * Parameters       :
+ *      htim        -   Handle to the timer for which the period must be changed
+ *      period      -   New period value
+ *
+ * Returns          :   void
+ */
+void changeTimer1Period(TIM_HandleTypeDef *htim, uint16_t period)
+{
+    if (htim->Instance != TIM1) {
+        return;
+    }
+    __HAL_TIM_SET_AUTORELOAD(htim, period);
 }

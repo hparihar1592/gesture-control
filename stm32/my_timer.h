@@ -1,9 +1,10 @@
 /*
  *******************************************************************************
  * File Name        :   my_timer.h
+ *
  * Description      :   Timer API specification
  *
- * Authors          :   Himanshu Parihar,
+ * Author          :   Himanshu Parihar
  *
  * Date             :   October 02, 2021
  *******************************************************************************

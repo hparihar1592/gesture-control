@@ -5,6 +5,9 @@ from utils import CvFpsCalc
 from gestures import *
 import threading
 import configargparse
+import serial
+
+SERIAL_PORT = "/dev/ttyACM0"
 
 
 def get_args():
@@ -52,6 +55,11 @@ def main():
     number = -1
     battery_status = -1
 
+    # Set up serial communication stuff
+    stm32 = serial.Serial(SERIAL_PORT)
+    stm32.baudrate = 115200
+    stm32.write(b"init\n")
+
     while True:
         fps = cv_fps_calc.get()
 
@@ -68,6 +76,7 @@ def main():
         # Quit?
         key = cv.waitKey(1) & 0xff
         if key == 27:  # ESC
+            stm32.write(b"stop\n")
             break
 
     cv.destroyAllWindows()

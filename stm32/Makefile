@@ -4,7 +4,7 @@
 
 # C source files for the project
 PROJ_NAME = simple_monitor
-SRCS  = my_main.c mycode.s mytest.c example.c final_project.c myGpio.c my_timer.c
+SRCS  = my_main.c mycode.s mytest.c example.c final_project.c myGpio.c my_timer.c HD44780_F3.c
 BUILD = build
 #PROCESSOR = STM32G474xx
 #PROCESSOR = STM32L432xx
