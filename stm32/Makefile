@@ -4,7 +4,7 @@
 
 # C source files for the project
 PROJ_NAME = simple_monitor
-SRCS  = my_main.c mycode.s mytest.c example.c final_project.c myGpio.c my_timer.c HD44780_F3.c
+SRCS  = my_main.c mycode.s mytest.c example.c final_project.c my_gpio.c my_timer.c HD44780_F3.c stepper_motor.c dc_motor.c lcd.c
 BUILD = build
 #PROCESSOR = STM32G474xx
 #PROCESSOR = STM32L432xx
@@ -188,7 +188,7 @@ CFLAGS += -DHAL_ADC_MODULE_ENABLED
 CFLAGS += -DHAL_DAC_MODULE_ENABLED
 endif
 
-LDFLAGS  = -Wall -g -std=c99 -Os
+LDFLAGS  = -Wall -g -std=c99 -Os -lm
 LDFLAGS += -mlittle-endian -mcpu=cortex-m4
 LDFLAGS += -Wl,--gc-sections -Wl,-Map=$(PROJ_NAME).map
 LDFLAGS += -mthumb

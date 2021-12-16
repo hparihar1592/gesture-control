@@ -45,4 +45,6 @@ void stopTimerNonBlockingDelay(TIM_HandleTypeDef *htim,
 
 void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period);
 
+void myTimer3Init(TIM_HandleTypeDef *htim);
+
 #endif

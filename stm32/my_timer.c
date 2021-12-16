@@ -27,6 +27,7 @@
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
 
 /*
  * Function         :   myTimer2Init
@@ -228,7 +229,6 @@ void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period)
         return;
     }
 
-    // DC motor
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
     sConfigOC.Pulse = 0;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
@@ -236,17 +236,19 @@ void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period)
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
     sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
     sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
-    if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, TIM_CHANNEL_2) != HAL_OK) {
+
+    // DC Motor
+    if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
         printf("Error initializing Timer 1\n");
         return;
     }
 
     // Stepper motor
-    sConfigOC.Pulse = period / 2;
     if (HAL_TIM_PWM_ConfigChannel(htim, &sConfigOC, TIM_CHANNEL_2) != HAL_OK) {
         printf("Error initializing Timer 1\n");
         return;
     }
+
     sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
     sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
@@ -261,8 +263,12 @@ void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period)
     }
 
     /* TIM1 interrupt Init */
+    /*
+    HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
     HAL_NVIC_SetPriority(TIM1_CC_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
+    */
 
     GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
@@ -272,13 +278,15 @@ void myTimer1Init(TIM_HandleTypeDef *htim, uint16_t prescaler, uint16_t period)
     PA8     ------> TIM1_CH1
     PB14     ------> TIM1_CH2N
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+    // DC Motor
+    GPIO_InitStruct.Pin = GPIO_PIN_8;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLDOWN;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+    // Stepper Motor
     GPIO_InitStruct.Pin = GPIO_PIN_14;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -326,4 +334,115 @@ void changeTimer1Period(TIM_HandleTypeDef *htim, uint16_t period)
         return;
     }
     __HAL_TIM_SET_AUTORELOAD(htim, period);
+}
+
+/*
+ * Function         :   TIM1_UP_TIM10_IRQHandler
+ *
+ * Description      :   This function gets called when an interrupt occurs on
+ *                      Timer 1
+ *
+ * Parameters       :   void
+ *
+ * Returns          :   void
+ */
+/*
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim1);
+}
+*/
+
+/*
+ * Function         :   TIM1_CC_IRQHandler
+ *
+ * Description      :   This function gets called when an interrupt occurs on
+ *                      Timer 1
+ *
+ * Parameters       :   void
+ *
+ * Returns          :   void
+ */
+/*
+void TIM1_CC_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim1);
+}
+*/
+
+/*
+ * Function         :   myTimer3Init
+ *
+ * Description      :   Initialize Timer 3 for Quadrature Encoder
+ *
+ * Parameters       :
+ *      htim        -   Handle to timer 3
+ *
+ * Returns          :   void
+ */
+void myTimer3Init(TIM_HandleTypeDef *htim)
+{
+    // Enable clocks
+    __HAL_RCC_TIM3_CLK_ENABLE();
+
+    TIM_Encoder_InitTypeDef sConfig = {0};
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+    htim->Instance = TIM3;
+    htim->Init.Prescaler = 0;
+    htim->Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim->Init.Period = UINT16_MAX - 1;
+    htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+    sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
+    sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
+    sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
+    sConfig.IC1Filter = 3;
+    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
+    sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
+    sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
+    sConfig.IC2Filter = 3;
+    if (HAL_TIM_Encoder_Init(htim, &sConfig) != HAL_OK) {
+        printf("Error occured while initializing Timer 3 Encoder\n");
+    }
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(htim, &sMasterConfig) != HAL_OK) {
+        printf("Error occured while initializing Timer 3\n");
+    }
+
+    // Interrupt
+    HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(TIM3_IRQn);
+
+    // GPIOs
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    /**TIM3 GPIO Configuration
+    PA6     ------> TIM3_CH1
+    PA7     ------> TIM3_CH2
+    */
+    GPIO_InitStruct.Pin = GPIO_PIN_6|GPIO_PIN_7;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+/*
+ * Function         :   TIM3_IRQHandler
+ *
+ * Description      :   This function gets called when an interrupt occurs on
+ *                      Timer 3
+ *
+ * Parameters       :   void
+ *
+ * Returns          :   void
+ */
+void TIM3_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim3);
 }

@@ -9,6 +9,7 @@ from collections import deque
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
+from motor import MotorSelection
 
 from utils import CvFpsCalc
 from model import KeyPointClassifier
@@ -146,11 +147,20 @@ class GestureRecognition:
 
         return image
 
-    def draw_info(self, image, fps, mode, number):
+    def draw_info(self, image, fps, mode, number, lower_left_text, motor_selection):
         cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
                    1.0, (0, 0, 0), 4, cv.LINE_AA)
         cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
                    1.0, (255, 255, 255), 2, cv.LINE_AA)
+        cv.putText(image, lower_left_text, (10, 460), cv.FONT_HERSHEY_SIMPLEX,
+                   1.0, (255, 255, 255), 2, cv.LINE_AA)
+        
+        if motor_selection == MotorSelection.STEPPER_MOTOR:
+            motor_selection_string = "Stepper"
+        elif motor_selection == MotorSelection.DC_MOTOR:
+            motor_selection_string = "DC"
+
+        cv.putText(image, f"Motor: {motor_selection_string}", (400, 460), cv.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2, cv.LINE_AA)
 
         mode_string = ['Logging Key Point', 'Logging Point History']
         if 1 <= mode <= 2:
