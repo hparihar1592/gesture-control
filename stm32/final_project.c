@@ -17,6 +17,7 @@
 #include "stdint.h"
 #include "stdlib.h"
 #include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_tim.h"
 #include "stm32f4xx_hal_tim_ex.h"
 #include "HD44780_F3.h"
@@ -101,6 +102,10 @@ ParserReturnVal_t CmdInit(int action)
     // Delay at regular intervals
     myTimer2Init(&htim2, 100 - 1, UINT32_MAX - 1);
     generateTimerNonBlockingDelay(&htim2, SAMPLE_TIME, &delayParams);
+
+    // Analog interface
+    myAnalogGpioInit();
+    HAL_GPIO_WritePin(ANALOG_INTERFACE_TEST_GPIO_Port, ANALOG_INTERFACE_TEST_Pin, GPIO_PIN_SET);
 
     return CmdReturnOk;
 }

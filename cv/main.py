@@ -69,6 +69,7 @@ def main():
         stm32.write(b"init\n")
         stm32.write(b"stepperstart\n")
         stm32.write(b"dcstart\n")
+        stm32.write(b"adcinit\n")
     except SerialException:
         print("Error setting up serial com for STM32 board")
 
